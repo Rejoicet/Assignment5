@@ -1,3 +1,4 @@
+#include "GenStack.h"
 #include "GenNode.h"
 #include "GenDlinkedlist.h"
 #include "GenTreeNode.h"

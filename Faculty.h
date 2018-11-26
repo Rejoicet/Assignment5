@@ -12,6 +12,8 @@ public:
      void printinfo();
      void printexit();
      int listsize();
+     unsigned int removeadID(unsigned int& sID);
+     void addtolist(unsigned int aID);
 
      friend bool operator== (const Faculty &f1, const Faculty &f2);
      friend bool operator!= (const Faculty &f1, const Faculty &f2);

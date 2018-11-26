@@ -63,7 +63,6 @@ void Student::setGPA(double aGPA) {
 
 void Student::setAdvisorID(unsigned int afacID) {
   facID = afacID;
-
 }
 
 void Student::printinfo()

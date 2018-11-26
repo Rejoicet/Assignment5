@@ -1,3 +1,4 @@
+#include "GenStack.h"
 #include "GenNode.h"
 #include "GenDlinkedlist.h"
 #include "GenTreeNode.h"
@@ -21,6 +22,11 @@ Simulation::Simulation ()
   ftree = new BST <Faculty>;
   choice = 0;
   j = 2;
+  option = 0;
+  lastEdit = -1;
+  sRollback = new GenDlinkedlist<Student>;
+  fRollback = new GenDlinkedlist<Faculty>;
+  myStack = new GenStack<int>;
 }
 
 Simulation::~Simulation () {}
@@ -109,11 +115,21 @@ void Simulation::simulate()
        choiceStream >> choice;*/
        switch(input) {
             case 1:
-                 stree -> printAll();
-                 break;
+                if (stree -> isEmpty() == true) {
+                  cout << endl << "There are no students present in the database!" << endl << endl;
+                }
+                else {
+                  stree -> printAll();
+                }
+                break;
             case 2:
-                 ftree -> printAll();
-                 break;
+                if (ftree -> isEmpty() == true) {
+                  cout << endl << "There are no faculties present in the database!" << endl << endl;
+                }
+                else {
+                  ftree -> printAll();
+                }
+                break;
             case 3:
                 cout << "Please enter the ID number of the student you want the information of" << endl;
                 cin >> sID;
@@ -125,48 +141,68 @@ void Simulation::simulate()
                 }
                 break;
             case 4:
-                 cout << "Please enter the ID number of the faculty you want the information of" << endl;
-                 cin >> fID;
-                 if (facultycheckID(fID) == false) {
-                 cout << "This faculty is not present in the database!" << endl;
-                 }
-                 else {
-                   finfo(fID);
-                 }
-                 break;
+                cout << "Please enter the ID number of the faculty you want the information of" << endl;
+                cin >> fID;
+                if (facultycheckID(fID) == false) {
+                cout << "This faculty is not present in the database!" << endl;
+                }
+                else {
+                 finfo(fID);
+                }
+                break;
             case 5:
-              facInfo ();
-              break;
+                facInfo ();
+                break;
             case 6:
-                //stuInfo();
+                stuInfo();
                 break;
             case 7:
-                 createStudent();
-                 break;
+                createStudent();
+                break;
             case 8:
-                 sdelete();
-                 break;
+                sdelete();
+                break;
             case 9:
-                 createFaculty();
-                 break;
+                createFaculty();
+                break;
             case 10:
-                 fdelete();
-                 break;
+                fdelete();
+                break;
             case 11:
-                 // Change a student’s advisor given the student id and the new faculty id.
-                 break;
+                cout << "Please enter the id of the student whose advisor you want to change." << endl;
+                cin >> sID;
+                while (studentcheckID(sID) == false) {
+                  cout << "Please enter the correct ID of the student. The ID you entered is not in the database." << endl;
+                  cin >> sID;
+                }
+                cout << "Please enter the new faculty ID you would like to assign to the student." << endl;
+                cin >> fID;
+                while (facultycheckID(fID) == false) {
+                  cout << "Please enter the correct ID of the faculty. The ID you entered is not in the database." << endl;
+                  cin >> fID;
+                }
+                changeAdvisor(sID, fID);
+                break;
             case 12:
-                 // Remove an advisee from a faculty member given the ids
-                 break;
+                cout << "Please enter the ID of the faculty whose advisee you want to remove." << endl;
+                cin >> fID;
+                while (facultycheckID(fID) == false) {
+                  cout << "Please enter the correct ID of the faculty. The ID you entered is not in the database." << endl;
+                  cin >> fID;
+                }
+                cout << "Please enter the ID of the advisee you want to remove." << endl;
+                cin >> sID;
+                removeAdvisee(fID, sID);
+                break;
             case 13:
-                 // Rollback
-                 break;
+                rollback();
+                break;
             case 14:
-              break;
+                break;
        }
   }
   //this means the user has selected 14
-  cout << "Thank you for using the program. Bye." << endl;
+  cout << endl << "Thank you for using the program. Bye." << endl << endl;
   freopen ("studentTable.txt", "w", stdout);    /*writes the output to the
                             specified file. Creates a new file if not present*/
   stree -> exit();
@@ -232,8 +268,14 @@ void Simulation::createStudent ()
     cout << "This faculty ID is not present in the database. Please enter the correct ID." << endl;
     cin >> fID;
   }*/
+
   Student student (sID, nam, lev, maj, GP, fID);
   stree -> insert(student);
+  if(sRollback -> size() == 5){
+    sRollback -> removeBack();
+  }
+  sRollback -> addFront(student);
+  myStack -> push (0);
 }
 
 void Simulation::createFaculty()
@@ -254,7 +296,7 @@ void Simulation::createFaculty()
   for (int i = 0; i < a; i++) {
     cout << "Please enter the student id" << endl;
     cin >> b;
-    /*while (studentcheckID(b) == false) {
+    /*if (studentcheckID(b) == false) {
       cout << "This student ID is not present in the database. Please enter the correct ID." << endl;
       cin >> b;
     }*/
@@ -262,6 +304,11 @@ void Simulation::createFaculty()
   }
   Faculty faculty (fID, nam, lev, dep, adIDs);
   ftree -> insert(faculty);
+  if(fRollback -> size() == 5){
+    fRollback -> removeBack();
+  }
+  fRollback -> addFront(faculty);
+  myStack -> push (1);
 }
 
 bool Simulation::studentcheckID (unsigned int cID)
@@ -283,8 +330,15 @@ void Simulation::sdelete ()
   }
   Student student;
   student.setID (sID);
+  Student stu;
+  stu = stree -> getobject(student);
   stree -> deleteRec (student);
   cout << "The given ID has been deleted successfully!" << endl;
+  if(sRollback -> size() == 5){
+    sRollback -> removeBack();
+  }
+  sRollback -> addFront(stu);
+  myStack -> push (0);
 }
 
 bool Simulation::facultycheckID (unsigned int cID)
@@ -306,8 +360,15 @@ void Simulation::fdelete ()
   }
   Faculty faculty;
   faculty.setID (fID);
+  Faculty fac;
+  fac = ftree -> getobject (faculty);
   ftree -> deleteRec (faculty);
   cout << "The given ID has been deleted successfully!" << endl;
+  if(fRollback -> size() == 5){
+    fRollback -> removeBack();
+  }
+  fRollback -> addFront(fac);
+  myStack -> push (1);
 }
 
 void Simulation::sinfo (unsigned int sID)
@@ -337,7 +398,7 @@ void Simulation::facInfo()
   cout << "Faculty Advisor info -> " << endl;
   finfo(stree -> facultyInfo(student));
 }
-/*
+
 void Simulation::stuInfo()
 {
   cout << "Please enter the id of the faculty whose advisee info you want to view" << endl;
@@ -346,5 +407,76 @@ void Simulation::stuInfo()
     cout << "Please enter the correct ID of the faculty." << endl;
     cin >> fID;
   }
+  stree -> adviseeInfo (fID);
+}
+
+void Simulation::changeAdvisor(unsigned int sID, unsigned int newfID)
+{
+  Student student;
+  student.setID(sID);
+  oldfID = stree -> changeFadvisor (student, newfID);
   Faculty faculty;
-}*/
+  faculty.setID(newfID);
+  ftree -> addFadvisee (faculty, sID);
+  faculty.setID(oldfID);
+  if (ftree -> removeSadvisee (faculty, sID) == sID) {
+    cout << endl << "The advisee has been removed sucessfully!" << endl;
+  }
+}
+
+void Simulation::removeAdvisee(unsigned int fID, unsigned int sID)
+{
+  Faculty faculty;
+  faculty.setID(fID);
+  if (ftree -> removeSadvisee (faculty, sID) == sID) {
+    cout << endl << "The advisee has been removed sucessfully!" << endl;
+    Student student;
+    student.setID(sID);
+    while (stree -> checkAdvisor(student, fID) == true) {
+      cout << "The student still has this faculty registered as their advisor." << endl;
+      cout << "Please select one of the below options" << endl;
+      cout << "1 - Delete the student" << endl;
+      cout << "2 - Assign a new faculty to the student" << endl;
+      cin >> option;
+      if (option == 1) {
+        stree -> deleteRec (student);
+      }
+      else if (option == 2) {
+        cout << "Please enter the new faculty ID you would like to assign to the student." << endl;
+        cin >> newfID;
+        while (facultycheckID(newfID) == false) {
+          cout << "Please enter the correct ID of the faculty. The ID you entered is not in the database." << endl;
+          cin >> newfID;
+        }
+        oldfID = stree -> changeFadvisor (student, newfID);
+        Faculty faculty;
+        faculty.setID(newfID);
+        ftree -> addFadvisee (faculty, sID);
+      }
+    }
+    cout << endl << "Thank you!"<< endl;
+  }
+}
+
+void Simulation::rollback() {
+     if(myStack -> empty() == true)
+          cout << endl << "Unable to rollback. No edits made!" << endl << endl;
+     else if(myStack -> top() == 0) {
+          Student stu = sRollback -> front();
+          if(stree -> contains(stu))
+               stree -> deleteRec(stu);
+          else
+               stree -> insert(stu);
+          sRollback -> removeFront();
+          myStack -> pop();
+     }
+     else {
+          Faculty fac = fRollback -> front();
+          if(ftree -> contains(fac))
+               ftree -> deleteRec(fac);
+          else
+               ftree -> insert(fac);
+          fRollback -> removeFront();
+          myStack -> pop();
+     }
+}

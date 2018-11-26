@@ -34,6 +34,11 @@ void Faculty::setID(unsigned int ID)
   IDnum = ID;
 }
 
+void Faculty::addtolist(unsigned int aID)
+{
+  adviseeIDs -> addBack (aID);
+}
+
 void Faculty::printinfo()
 {
   cout << endl << "Id: " << IDnum << endl <<
@@ -54,6 +59,24 @@ void Faculty::printexit()
 int Faculty::listsize()
 {
   return adviseeIDs -> size();
+}
+
+unsigned int Faculty::removeadID(unsigned int& sID)
+{
+  if (adviseeIDs -> isEmpty() == true) {
+    cout << "There are no advisees under this faculty" << endl;
+    return sID = 0;
+  }
+  else {
+    if (adviseeIDs -> contains (sID) == false) {
+      cout << "This advisee is not present under this faculty" << endl;
+      return sID = 0;
+    }
+    else {
+      adviseeIDs -> remove (sID);
+      return sID;
+    }
+  }
 }
 
 bool operator== (const Faculty &f1, const Faculty &f2) {

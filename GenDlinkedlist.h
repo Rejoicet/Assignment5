@@ -22,6 +22,7 @@ public:
   void reduce ();
   T sort (T c, T d, T& s, T& med);
   int size();
+  unsigned int listDetails();
 
 private:
   friend class Faculty;
@@ -129,9 +130,9 @@ GenNode<T> *GenDlinkedlist<T>::remove (T key)
       node = node -> next;
     }
 
-    if (node == trailer) {
-      cout << "There is no node with element " << key << " in the linked list." << endl;
-    }
+    //if (node == trailer) {
+      //cout << "There is no node with element " << key << " in the linked list." << endl;
+    //}
   }
 }
 
@@ -175,6 +176,20 @@ void GenDlinkedlist<T>::printList() const
     curr = curr -> next;
   }
 }
+
+template <class T>
+unsigned int GenDlinkedlist<T>::listDetails()
+{
+  GenNode<T> *curr = new GenNode<T>;
+  curr = header;
+  curr = curr -> next;
+
+  while (curr != trailer) {
+    return curr -> elem;
+    curr = curr -> next;
+  }
+}
+
 
 template <class T>
 int GenDlinkedlist<T>::size()

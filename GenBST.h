@@ -26,10 +26,17 @@ public:
 
   void individualInfo(T k);
   unsigned int facultyInfo(T k);
+  unsigned int changeFadvisor (T k, unsigned int& afID);
+  unsigned int removeSadvisee (T k, unsigned int& asID);
+  bool checkAdvisor (T k, unsigned int afID);
+  void addFadvisee (T k, unsigned int asID);
+  T getobject(T& k);
+  void adviseeInfo (unsigned int fID);
 
   TreeNode<T> *getSuccessor (TreeNode<T> *d);
 
 private:
+  unsigned int fID;
   TreeNode<T> *root;
   friend class Simulation;
 };
@@ -324,8 +331,8 @@ unsigned int BST<T>::facultyInfo (T k)
   return current -> key.getAdvisorID();
 }
 
-/*template <class T>
-unsigned int BST<T>::adviseeInfo (T k)
+template <class T>
+unsigned int BST<T>::changeFadvisor (T k, unsigned int& afID)
 {
   TreeNode<T> *parent = root;
   TreeNode<T> *current = root;
@@ -341,5 +348,112 @@ unsigned int BST<T>::adviseeInfo (T k)
       current = current -> right;
     }
   }
-  current -> key.listsize();
-}*/
+  fID = current -> key.getAdvisorID();
+  current -> key.setAdvisorID(afID);
+  return fID;
+}
+
+template <class T>
+unsigned int BST<T>::removeSadvisee (T k, unsigned int& asID)
+{
+  TreeNode<T> *parent = root;
+  TreeNode<T> *current = root;
+
+  //now we need to find it
+  while (current -> key != k) {
+    if (k < current -> key) {
+      parent = current;
+      current = current -> left;
+    }
+    else { //go right
+      parent = current;
+      current = current -> right;
+    }
+  }
+  if (current -> key.removeadID (asID) == 0) {
+    return asID = 0;
+  }
+  else {
+    return asID;
+  }
+}
+
+template <class T>
+bool BST<T>::checkAdvisor (T k, unsigned int afID)
+{
+  TreeNode<T> *parent = root;
+  TreeNode<T> *current = root;
+
+  //now we need to find it
+  while (current -> key != k) {
+    if (k < current -> key) {
+      parent = current;
+      current = current -> left;
+    }
+    else { //go right
+      parent = current;
+      current = current -> right;
+    }
+    if (current == NULL)
+      return false;
+  }
+  if (current -> key.getAdvisorID () == afID) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+template <class T>
+void BST<T>::addFadvisee(T k, unsigned int asID)
+{
+  TreeNode<T> *parent = root;
+  TreeNode<T> *current = root;
+
+  //now we need to find it
+  while (current -> key != k) {
+    if (k < current -> key) {
+      parent = current;
+      current = current -> left;
+    }
+    else { //go right
+      parent = current;
+      current = current -> right;
+    }
+  }
+  current -> key.addtolist(asID);
+}
+
+template <class T>
+T BST<T>::getobject(T& k)
+{
+  TreeNode<T> *parent = root;
+  TreeNode<T> *current = root;
+
+  //now we need to find it
+  while (current -> key != k) {
+    if (k < current -> key) {
+      parent = current;
+      current = current -> left;
+    }
+    else { //go right
+      parent = current;
+      current = current -> right;
+    }
+  }
+  return current -> key;
+}
+
+template <class T>
+void BST<T>::adviseeInfo (unsigned int fID)
+{
+  TreeNode<T>* node = root;
+  if (node == NULL)
+  return;
+
+  recPrintAll (node -> left);
+  if (node -> key.getAdvisorID() == fID)
+    node -> key.printinfo();
+  recPrintAll (node -> right);
+}
